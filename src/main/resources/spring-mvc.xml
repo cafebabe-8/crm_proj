@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--声明注解驱动-->
+    <mvc:annotation-driven/>
+
+    <!--扫描控制器、异常处理器  controller controlleradvice listener......-->
+    <context:component-scan base-package="org.crm.**.web.*"/>
+
+    <!--静态资源管理-->
+    <mvc:resources mapping="/static/**" location="/static/" cache-period="#{3600*24*10}"/>
+
+    <!--视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!--登录权限的拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!--
+                对哪些资源进行拦截，必须是springmvc的中央处理器拦截的资源
+                如果希望对jsp生效，则中央处理器就需要对jsp也进行拦截
+
+                这里拦截路径，相当于是对springmvc中央处理的拦截的资源进行进一步筛选
+
+                springmvc中央处理器不拦截的资源，这里也一定是不拦截的
+            -->
+            <mvc:mapping path="/**" />
+            <mvc:exclude-mapping path="/login.html"/>
+            <mvc:exclude-mapping path="/"/>
+            <mvc:exclude-mapping path="/user/login"/>
+            <mvc:exclude-mapping path="/errorpage.html"/>
+            <mvc:exclude-mapping path="/static/**"/>
+            <!--制定自定义拦截器-->
+            <bean class="org.crm.web.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!-- 文件上传解析器 id必须是multipartResolver-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="#{1024*1024*5}"/>
+        <property name="defaultEncoding" value="utf-8"/>
+    </bean>
+
+<!--  站点入口  -->
+<!--    <mvc:view-controller path="/" view-name="/login"/>-->
+</beans>

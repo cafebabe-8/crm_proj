@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.crm.dao.TranDao">
+
+    <resultMap type="org.crm.entity.Tran" id="TranMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="owner" column="owner" jdbcType="VARCHAR"/>
+        <result property="money" column="money" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="expecteddate" column="expectedDate" jdbcType="VARCHAR"/>
+        <result property="customerid" column="customerId" jdbcType="VARCHAR"/>
+        <result property="stage" column="stage" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="source" column="source" jdbcType="VARCHAR"/>
+        <result property="activityid" column="activityId" jdbcType="VARCHAR"/>
+        <result property="contactsid" column="contactsId" jdbcType="VARCHAR"/>
+        <result property="createby" column="createBy" jdbcType="VARCHAR"/>
+        <result property="createtime" column="createTime" jdbcType="VARCHAR"/>
+        <result property="editby" column="editBy" jdbcType="VARCHAR"/>
+        <result property="edittime" column="editTime" jdbcType="VARCHAR"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="contactsummary" column="contactSummary" jdbcType="VARCHAR"/>
+        <result property="nextcontacttime" column="nextContactTime" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="TranMap2" type="org.crm.entity.Tran" extends="TranMap">
+        <association property="user" column="owner" select="org.crm.dao.TblUserDao.queryById"/>
+        <association property="creator" column="createby" select="org.crm.dao.TblUserDao.queryById"/>
+        <association property="editor" column="editby" select="org.crm.dao.TblUserDao.queryById"/>
+        <association property="customer" column="customerid" select="org.crm.dao.CustomerDao.queryById"/>
+        <association property="activity" column="activityid" select="org.crm.dao.ActivityDao.queryById"/>
+        <association property="contacts" column="contactsid" select="org.crm.dao.ContactsDao.queryById"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="TranMap2">
+        select id,
+               owner,
+               money,
+               name,
+               expectedDate,
+               customerId,
+               stage,
+               type,
+               source,
+               activityId,
+               contactsId,
+               createBy,
+               createTime,
+               editBy,
+               editTime,
+               description,
+               contactSummary,
+               nextContactTime
+        from crm.tran
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="TranMap">
+        select id,
+               owner,
+               money,
+               name,
+               expectedDate,
+               customerId,
+               stage,
+               type,
+               source,
+               activityId,
+               contactsId,
+               createBy,
+               createTime,
+               editBy,
+               editTime,
+               description,
+               contactSummary,
+               nextContactTime
+        from crm.tran
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="TranMap">
+        select
+        id, owner, money, name, expectedDate, customerId, stage, type, source, activityId, contactsId, createBy,
+        createTime, editBy, editTime, description, contactSummary, nextContactTime
+        from crm.tran
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="owner != null and owner != ''">
+                and owner = #{owner}
+            </if>
+            <if test="money != null and money != ''">
+                and money = #{money}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="expecteddate != null and expecteddate != ''">
+                and expectedDate = #{expecteddate}
+            </if>
+            <if test="customerid != null and customerid != ''">
+                and customerId = #{customerid}
+            </if>
+            <if test="stage != null and stage != ''">
+                and stage = #{stage}
+            </if>
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+            <if test="source != null and source != ''">
+                and source = #{source}
+            </if>
+            <if test="activityid != null and activityid != ''">
+                and activityId = #{activityid}
+            </if>
+            <if test="contactsid != null and contactsid != ''">
+                and contactsId = #{contactsid}
+            </if>
+            <if test="createby != null and createby != ''">
+                and createBy = #{createby}
+            </if>
+            <if test="createtime != null and createtime != ''">
+                and createTime = #{createtime}
+            </if>
+            <if test="editby != null and editby != ''">
+                and editBy = #{editby}
+            </if>
+            <if test="edittime != null and edittime != ''">
+                and editTime = #{edittime}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+            <if test="contactsummary != null and contactsummary != ''">
+                and contactSummary = #{contactsummary}
+            </if>
+            <if test="nextcontacttime != null and nextcontacttime != ''">
+                and nextContactTime = #{nextcontacttime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert">
+        insert into crm.tran(id, owner, money, name, expectedDate, customerId, stage, type, source, activityId, contactsId,
+                             createBy, createTime, editBy, editTime, description, contactSummary, nextContactTime)
+        values (#{id}, #{owner}, #{money}, #{name}, #{expecteddate}, #{customerid}, #{stage}, #{type}, #{source},
+                #{activityid}, #{contactsid}, #{createby}, #{createtime}, #{editby}, #{edittime}, #{description},
+                #{contactsummary}, #{nextcontacttime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update crm.tran
+        <set>
+            <if test="owner != null and owner != ''">
+                owner = #{owner},
+            </if>
+            <if test="money != null and money != ''">
+                money = #{money},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="expecteddate != null and expecteddate != ''">
+                expectedDate = #{expecteddate},
+            </if>
+            <if test="customerid != null and customerid != ''">
+                customerId = #{customerid},
+            </if>
+            <if test="stage != null and stage != ''">
+                stage = #{stage},
+            </if>
+            <if test="type != null and type != ''">
+                type = #{type},
+            </if>
+            <if test="source != null and source != ''">
+                `source` = #{source},
+            </if>
+            <if test="activityid != null and activityid != ''">
+                activityId = #{activityid},
+            </if>
+            <if test="contactsid != null and contactsid != ''">
+                contactsId = #{contactsid},
+            </if>
+            <if test="createby != null and createby != ''">
+                createBy = #{createby},
+            </if>
+            <if test="createtime != null and createtime != ''">
+                createTime = #{createtime},
+            </if>
+            <if test="editby != null and editby != ''">
+                editBy = #{editby},
+            </if>
+            <if test="edittime != null and edittime != ''">
+                editTime = #{edittime},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="contactsummary != null and contactsummary != ''">
+                contactSummary = #{contactsummary},
+            </if>
+            <if test="nextcontacttime != null and nextcontacttime != ''">
+                nextContactTime = #{nextcontacttime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete
+        from crm.tran
+        where id = #{id}
+    </delete>
+
+</mapper>

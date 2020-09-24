@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.crm.dao.ActivityDao">
+
+    <resultMap type="org.crm.entity.Activity" id="ActivityMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="owner" column="owner" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="startdate" column="startDate" jdbcType="VARCHAR"/>
+        <result property="enddate" column="endDate" jdbcType="VARCHAR"/>
+        <result property="cost" column="cost" jdbcType="VARCHAR"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="createtime" column="createTime" jdbcType="VARCHAR"/>
+        <result property="createby" column="createBy" jdbcType="VARCHAR"/>
+        <result property="edittime" column="editTime" jdbcType="VARCHAR"/>
+        <result property="editby" column="editBy" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+<!--    嵌套查询resultmap-->
+    <resultMap id="ActivityMap2" type="org.crm.entity.Activity" extends="ActivityMap">
+        <association property="user" column="owner" select="org.crm.dao.TblUserDao.queryById"/>
+    </resultMap>
+
+    <!--    嵌套查询resultmap-->
+    <resultMap id="ActivityMap3" type="org.crm.entity.Activity" extends="ActivityMap">
+        <association property="user" column="owner" select="org.crm.dao.TblUserDao.queryById"/>
+        <association property="creator" column="createby" select="org.crm.dao.TblUserDao.queryById"/>
+        <association property="editor" column="editby" select="org.crm.dao.TblUserDao.queryById"/>
+    </resultMap>
+
+
+    <!--  根据线索id查询对应的活动列表  -->
+    <select id="queryReferAct" resultMap="ActivityMap2">
+        select
+                a.*
+        from
+                activity a, clue_activity_relation b
+        where
+                b.clueId = #{clueId} and a.id = b.activityId
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ActivityMap3">
+        select id,
+               owner,
+               name,
+               startDate,
+               endDate,
+               cost,
+               description,
+               createTime,
+               createBy,
+               editTime,
+               editBy
+        from crm.activity
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ActivityMap">
+        select id,
+               owner,
+               name,
+               startDate,
+               endDate,
+               cost,
+               description,
+               createTime,
+               createBy,
+               editTime,
+               editBy
+        from crm.activity
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+<!--    嵌套查询-->
+    <select id="queryAll" resultMap="ActivityMap2">
+        select
+        id, owner, name, startDate, endDate, cost, description, createTime, createBy, editTime, editBy
+        from crm.activity
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="owner != null and owner != ''">
+                and owner = #{owner}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="startdate != null and startdate != ''">
+                and startDate = #{startdate}
+            </if>
+            <if test="enddate != null and enddate != ''">
+                and endDate = #{enddate}
+            </if>
+            <if test="cost != null and cost != ''">
+                and cost = #{cost}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+            <if test="createtime != null and createtime != ''">
+                and createTime = #{createtime}
+            </if>
+            <if test="createby != null and createby != ''">
+                and createBy = #{createby}
+            </if>
+            <if test="edittime != null and edittime != ''">
+                and editTime = #{edittime}
+            </if>
+            <if test="editby != null and editby != ''">
+                and editBy = #{editby}
+            </if>
+        </where>
+    </select>
+
+<!--    模糊查询-->
+    <select id="fuzzyQuery" resultMap="ActivityMap2">
+        select *
+        from activity
+        <where>
+            <if test="keyword!=null and keyword!=''">
+                AND name like '%' #{keyword} '%'
+            </if>
+        </where>
+
+
+
+
+    </select>
+
+
+<!--    筛选出用于导出到excel表中的数据-->
+    <select id="queryAllForExport" resultMap="ActivityMap2">
+        SELECT a.*
+        FROM activity a, tbl_user b
+        WHERE  a.owner = b.id
+        <if test="activity.name!=null and activity.name!=''">
+            AND  a.name like '%' #{activity.name} '%'
+        </if>
+        <if test="activity.startdate!=null and activity.startdate!=''">
+            AND  a.startDate like '%' #{activity.startdate} '%'
+        </if>
+        <if test="activity.enddate!=null and activity.enddate!=''">
+            AND  a.endDate like '%' #{activity.enddate} '%'
+        </if>
+        <if test="activity.user!=null and activity.user.name!=null and activity.user.name!=''">
+            AND b.name like '%' #{activity.user.name} '%'
+        </if>
+        <if test="selectall == false">
+            <choose>
+                <when test="lastState == true">
+                    AND a.id not in
+                    <foreach collection="notinarray" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND a.id in
+                    <foreach collection="inarray" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert">
+        insert into crm.activity(id, owner, name, startDate, endDate, cost, description, createTime, createBy, editTime,
+                                 editBy)
+        values (#{id}, #{owner}, #{name}, #{startdate}, #{enddate}, #{cost}, #{description}, #{createtime}, #{createby},
+                #{edittime}, #{editby})
+    </insert>
+
+<!--    插入文件中读取出来的记录
+        注意这里只需要设置分隔符就行-->
+    <insert id="insertImported">
+        insert into activity values
+        <foreach collection="actList" item="act"  separator=",">
+            (
+             #{act.id},
+             #{act.owner},
+             #{act.name},
+             #{act.startdate},
+             #{act.enddate},
+             #{act.cost},
+             #{act.description},
+             #{act.createtime},
+             #{act.createby},
+             #{act.edittime},
+             #{act.editby}
+            )
+        </foreach>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update crm.activity
+        <set>
+            <if test="owner != null and owner != ''">
+                owner = #{owner},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="startdate != null and startdate != ''">
+                startDate = #{startdate},
+            </if>
+            <if test="enddate != null and enddate != ''">
+                endDate = #{enddate},
+            </if>
+            <if test="cost != null and cost != ''">
+                cost = #{cost},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="createtime != null and createtime != ''">
+                createTime = #{createtime},
+            </if>
+            <if test="createby != null and createby != ''">
+                createBy = #{createby},
+            </if>
+            <if test="edittime != null and edittime != ''">
+                editTime = #{edittime},
+            </if>
+            <if test="editby != null and editby != ''">
+                editBy = #{editby},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete
+        from crm.activity
+        where id = #{id}
+    </delete>
+
+
+<!--根据跨页勾选的选项删除-->
+    <delete id="deleteForPagination">
+        delete a
+        from  activity a, tbl_user b
+        where a.owner = b.id
+        <if test="activity.name!=null and activity.name!=''">
+            AND  a.name like '%' #{activity.name} '%'
+        </if>
+        <if test="activity.startdate!=null and activity.startdate!=''">
+            AND  a.startDate like '%' #{activity.startdate} '%'
+        </if>
+        <if test="activity.enddate!=null and activity.enddate!=''">
+            AND  a.endDate like '%' #{activity.enddate} '%'
+        </if>
+        <if test="activity.user!=null and activity.user.name!=null and activity.user.name!=''">
+            AND b.name like '%' #{activity.user.name} '%'
+        </if>
+        <if test="selectall == false">
+            <choose>
+                <when test="lastState == true">
+                    AND a.id not in
+                    <foreach collection="notinarray" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND a.id in
+                    <foreach collection="inarray" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </otherwise>
+            </choose>
+        </if>
+    </delete>
+
+
+    <!--通过主键批量删除-->
+    <delete id="deleteByIds">
+        delete
+        from crm.activity
+        where id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+<!--    sql片段 注意别名在其中的使用-->
+    <sql id="Pagination">
+        FROM
+            activity a,
+            tbl_user b
+        WHERE
+            a.owner = b.id
+            <if test="activity.name!=null and activity.name!=''">
+                AND a.name like '%' #{activity.name} '%'
+            </if>
+            <if test="activity.startDate!=null and activity.startDate!=''">
+                AND a.startDate = #{activity.startdate}
+            </if>
+            <if test="activity.endDate!=null and activity.endDate!=''">
+                AND a.endDate = #{activity.enddate}
+            </if>
+            <if test="activity.user!=null and activity.user.name!=null and activity.user.name!=''">
+                AND b.name LIKE '%' #{activity.user.name} '%'
+            </if>
+    </sql>
+
+<!--    查询总的记录数-->
+    <select id="total" resultType="int">
+        SELECT
+                count(*)
+        <include refid="Pagination"/>
+    </select>
+
+    <select id="queryAllByLimitForPage" resultMap="ActivityMap2">
+        SELECT
+               a.*
+        <include refid="Pagination"/>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+
+</mapper>

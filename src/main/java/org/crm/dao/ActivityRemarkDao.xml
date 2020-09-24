@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.crm.dao.ActivityRemarkDao">
+
+    <resultMap type="org.crm.entity.ActivityRemark" id="ActivityRemarkMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="notecontent" column="noteContent" jdbcType="VARCHAR"/>
+        <result property="createtime" column="createTime" jdbcType="VARCHAR"/>
+        <result property="createby" column="createBy" jdbcType="VARCHAR"/>
+        <result property="edittime" column="editTime" jdbcType="VARCHAR"/>
+        <result property="editby" column="editBy" jdbcType="VARCHAR"/>
+        <result property="editflag" column="editFlag" jdbcType="VARCHAR"/>
+        <result property="activityid" column="activityId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap type="org.crm.entity.ActivityRemark" id="ActivityRemarkMap2" extends="ActivityRemarkMap">
+        <association property="creator" column="createby" select="org.crm.dao.TblUserDao.queryById"/>
+        <association property="editor" column="editby" select="org.crm.dao.TblUserDao.queryById"/>
+    </resultMap>
+
+
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ActivityRemarkMap">
+        select id,
+               noteContent,
+               createTime,
+               createBy,
+               editTime,
+               editBy,
+               editFlag,
+               activityId
+        from crm.activity_remark
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ActivityRemarkMap">
+        select id,
+               noteContent,
+               createTime,
+               createBy,
+               editTime,
+               editBy,
+               editFlag,
+               activityId
+        from crm.activity_remark
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ActivityRemarkMap">
+        select
+        id, noteContent, createTime, createBy, editTime, editBy, editFlag, activityId
+        from crm.activity_remark
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="notecontent != null and notecontent != ''">
+                and noteContent = #{notecontent}
+            </if>
+            <if test="createtime != null and createtime != ''">
+                and createTime = #{createtime}
+            </if>
+            <if test="createby != null and createby != ''">
+                and createBy = #{createby}
+            </if>
+            <if test="edittime != null and edittime != ''">
+                and editTime = #{edittime}
+            </if>
+            <if test="editby != null and editby != ''">
+                and editBy = #{editby}
+            </if>
+            <if test="editflag != null and editflag != ''">
+                and editFlag = #{editflag}
+            </if>
+            <if test="activityid != null and activityid != ''">
+                and activityId = #{activityid}
+            </if>
+        </where>
+    </select>
+
+    <!--查询活动id字段为activityid的所有备注-->
+    <select id="queryByActivityId" resultMap="ActivityRemarkMap2">
+        select id,
+               noteContent,
+               createTime,
+               createBy,
+               editTime,
+               editBy,
+               editFlag,
+               activityId
+        from activity_remark
+        where activityId = #{activityid}
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" >
+        insert into crm.activity_remark(id,noteContent, createTime, createBy, editTime, editBy, editFlag, activityId)
+        values ( #{id} ,#{notecontent}, #{createtime}, #{createby}, #{edittime}, #{editby}, #{editflag}, #{activityid})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update crm.activity_remark
+        <set>
+            <if test="notecontent != null and notecontent != ''">
+                noteContent = #{notecontent},
+            </if>
+            <if test="createtime != null and createtime != ''">
+                createTime = #{createtime},
+            </if>
+            <if test="createby != null and createby != ''">
+                createBy = #{createby},
+            </if>
+            <if test="edittime != null and edittime != ''">
+                editTime = #{edittime},
+            </if>
+            <if test="editby != null and editby != ''">
+                editBy = #{editby},
+            </if>
+            <if test="editflag != null and editflag != ''">
+                editFlag = #{editflag},
+            </if>
+            <if test="activityid != null and activityid != ''">
+                activityId = #{activityid},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete
+        from crm.activity_remark
+        where id = #{id}
+    </delete>
+
+</mapper>

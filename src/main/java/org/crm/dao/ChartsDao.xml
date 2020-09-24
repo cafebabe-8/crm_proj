@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.crm.dao.ChartsDao">
+
+    <select id="queryTranCount" resultType="Map">
+        select
+               count(b.stage) value, a.value name
+        from
+               dic_value a left join tran b
+        on
+               a.value = b.stage
+        where a.typeCode = 'stage'
+        group by a.value
+
+    </select>
+
+</mapper>
