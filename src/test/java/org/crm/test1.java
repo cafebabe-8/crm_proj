@@ -7,5 +7,6 @@ public class test1 {
     public void test(){
         int a = 10;
         System.out.println(a++);
+        System.out.println("bran1");
     }
 }
